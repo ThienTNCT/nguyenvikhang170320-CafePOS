@@ -20,7 +20,7 @@
                asp-action="Checkout"
                asp-route-id="@Model.OrderId"
                class="btn btn-warning btn-sm rounded-pill px-3">
-                Checkout
+                Thanh toán
             </a>
         </div>
     </div>
@@ -163,23 +163,6 @@
                 </div>
             </div>
         </div>
-
-        @if (Model.PaymentStatus != "Paid")
-        {
-            <div class="text-end mt-4">
-                <button class="btn btn-success rounded-pill px-4 btn-mark-paid"
-                        data-id="@Model.OrderId"
-                        data-method="Cash">
-                    Thanh toán tiền mặt
-                </button>
-
-                <button class="btn btn-outline-primary rounded-pill px-4 btn-mark-paid"
-                        data-id="@Model.OrderId"
-                        data-method="Banking">
-                    Thanh toán chuyển khoản
-                </button>
-            </div>
-        }
     </div>
 </div>
 

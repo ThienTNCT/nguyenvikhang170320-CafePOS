@@ -3,13 +3,13 @@
 
 @{
     ViewData["Title"] = "Checkout";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
     var toppings = ViewBag.Toppings as List<Topping>;
 }
 
 <div class="container-fluid py-4">
     <div class="mb-4">
-        <h3 class="fw-bold mb-1">Checkout đơn hàng</h3>
+        <h3 class="fw-bold mb-1">Thanh toán đơn hàng</h3>
         <p class="text-muted mb-0">Xác nhận thanh toán, thêm topping nếu khách yêu cầu và tính lại tổng tiền.</p>
     </div>
 

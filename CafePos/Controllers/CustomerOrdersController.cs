@@ -20,44 +20,39 @@ namespace CafePos.Controllers
         [HttpGet]
         public async Task<IActionResult> Create()
         {
-            ViewBag.Products = await _context.Products
-                .Where(x => x.IsActive)
-                .OrderBy(x => x.Name)
-                .ToListAsync();
-
+            await LoadCreateViewData();
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(
-            string customerName,
-            string customerPhone,
-            string? note,
-            List<int> productIds,
-            List<int> quantities)
+     string? note,
+     string? phone,
+     List<int> productIds,
+     List<int> quantities,
+     List<int>? selectedToppingIds)
         {
-            ViewBag.Products = await _context.Products
-                .Where(x => x.IsActive)
-                .OrderBy(x => x.Name)
-                .ToListAsync();
+            await LoadCreateViewData();
 
-            if (string.IsNullOrWhiteSpace(customerName) || string.IsNullOrWhiteSpace(customerPhone))
-            {
-                TempData["Message"] = "Vui lòng nhập đầy đủ tên khách hàng và số điện thoại";
-                TempData["MessageType"] = "error";
-                return View();
-            }
-
-            if (productIds == null || quantities == null || !productIds.Any() || !quantities.Any())
-            {
-                TempData["Message"] = "Danh sách món không hợp lệ";
-                TempData["MessageType"] = "error";
-                return View();
-            }
-
+            var customerName = User.FindFirst("FullName")?.Value;
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+
+            if (string.IsNullOrWhiteSpace(customerName))
+            {
+                TempData["Message"] = "Không lấy được thông tin khách hàng từ tài khoản đăng nhập";
+                TempData["MessageType"] = "error";
+                return View();
+            }
+
+            if (string.IsNullOrWhiteSpace(phone))
+            {
+                TempData["Message"] = "Vui lòng nhập số điện thoại";
+                TempData["MessageType"] = "error";
+                return View();
+            }
+
+            if (string.IsNullOrWhiteSpace(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
             {
                 TempData["Message"] = "Không xác định được tài khoản đăng nhập";
                 TempData["MessageType"] = "error";
@@ -72,37 +67,68 @@ namespace CafePos.Controllers
                 return View();
             }
 
+            if (productIds == null || quantities == null || !productIds.Any() || !quantities.Any())
+            {
+                TempData["Message"] = "Dữ liệu món không hợp lệ";
+                TempData["MessageType"] = "error";
+                return View();
+            }
+
             var validItems = new List<OrderItem>();
             decimal subTotal = 0;
 
+            List<Topping> selectedToppings = new();
+            if (selectedToppingIds != null && selectedToppingIds.Any())
+            {
+                selectedToppings = await _context.Toppings
+                    .Where(x => selectedToppingIds.Contains(x.ToppingId) && x.IsActive)
+                    .ToListAsync();
+            }
+
             for (int i = 0; i < productIds.Count; i++)
             {
-                if (i >= quantities.Count)
-                    continue;
+                if (i >= quantities.Count) continue;
 
                 int quantity = quantities[i];
-                if (quantity <= 0)
-                    continue;
+                if (quantity <= 0) continue;
 
                 var product = await _context.Products
                     .FirstOrDefaultAsync(x => x.ProductId == productIds[i] && x.IsActive);
 
-                if (product == null)
-                    continue;
+                if (product == null) continue;
 
-                decimal lineTotal = product.BasePrice * quantity;
-                subTotal += lineTotal;
-
-                validItems.Add(new OrderItem
+                var orderItem = new OrderItem
                 {
                     ProductId = product.ProductId,
                     Quantity = quantity,
                     ProductNameSnapshot = product.Name,
                     UnitPrice = product.BasePrice,
-                    LineTotal = lineTotal,
                     SizeNameSnapshot = null,
-                    ItemNote = null
-                });
+                    ItemNote = null,
+                    OrderItemToppings = new List<OrderItemTopping>()
+                };
+
+                decimal toppingTotal = 0;
+
+                foreach (var top in selectedToppings)
+                {
+                    var itemTopping = new OrderItemTopping
+                    {
+                        ToppingId = top.ToppingId,
+                        ToppingNameSnapshot = top.Name,
+                        Price = top.Price,
+                        Quantity = quantity,
+                        TotalPrice = top.Price * quantity
+                    };
+
+                    orderItem.OrderItemToppings.Add(itemTopping);
+                    toppingTotal += itemTopping.TotalPrice;
+                }
+
+                orderItem.LineTotal = (product.BasePrice * quantity) + toppingTotal;
+                subTotal += orderItem.LineTotal;
+
+                validItems.Add(orderItem);
             }
 
             if (!validItems.Any())
@@ -116,7 +142,7 @@ namespace CafePos.Controllers
             {
                 OrderCode = "ORD" + DateTime.Now.ToString("yyyyMMddHHmmss"),
                 CustomerName = customerName,
-                CustomerPhone = customerPhone,
+                CustomerPhone = phone,
                 UserId = userId,
                 CreatedDate = DateTime.Now,
                 Note = note,
@@ -135,7 +161,23 @@ namespace CafePos.Controllers
             TempData["Message"] = "Đặt món thành công";
             TempData["MessageType"] = "success";
 
-            return RedirectToAction(nameof(MyOrders), new { phone = order.CustomerPhone });
+            return RedirectToAction(nameof(MyOrders));
+        }
+
+        private async Task LoadCreateViewData()
+        {
+            ViewBag.Products = await _context.Products
+                .Where(x => x.IsActive)
+                .OrderBy(x => x.Name)
+                .ToListAsync();
+
+            ViewBag.Toppings = await _context.Toppings
+                .Where(x => x.IsActive)
+                .OrderBy(x => x.Name)
+                .ToListAsync();
+
+            ViewBag.CustomerName = User.FindFirst("FullName")?.Value;
+            ViewBag.CustomerPhone = User.FindFirst("PhoneNumber")?.Value;
         }
 
         public async Task<IActionResult> MyOrders()

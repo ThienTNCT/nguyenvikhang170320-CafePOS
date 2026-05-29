@@ -1,8 +1,13 @@
 ﻿@using CafePos.Models
+
 @{
     ViewData["Title"] = "Đặt món";
     Layout = "~/Views/Shared/_Layout.cshtml";
+
     var products = ViewBag.Products as List<Product>;
+    var toppings = ViewBag.Toppings as List<Topping>;
+    var customerName = ViewBag.CustomerName as string;
+    
 }
 
 <div class="container py-4">
@@ -11,7 +16,7 @@
             <div class="card border-0 shadow-sm rounded-4">
                 <div class="card-body p-4">
                     <h2 class="fw-bold mb-2">Đặt món</h2>
-                    <p class="text-muted mb-4">Chọn món và nhập thông tin khách hàng để gửi đơn.</p>
+                    <p class="text-muted mb-4">Chọn món và topping để gửi đơn hàng.</p>
 
                     <form asp-action="Create" method="post" id="orderForm">
                         @Html.AntiForgeryToken()
@@ -19,12 +24,12 @@
                         <div class="row g-3 mb-4">
                             <div class="col-md-6">
                                 <label class="form-label">Tên khách hàng</label>
-                                <input type="text" name="customerName" class="form-control" required />
+                                <input type="text" class="form-control" value="@customerName" readonly />
                             </div>
 
                             <div class="col-md-6">
                                 <label class="form-label">Số điện thoại</label>
-                                <input type="text" name="customerPhone" class="form-control" required />
+                                <input name="phone" type="text" class="form-control" placeholder="Ví dụ: +8423456789 hoặc 0123456789" />
                             </div>
 
                             <div class="col-12">
@@ -33,7 +38,7 @@
                             </div>
                         </div>
 
-                        <h5 class="fw-bold mb-3">Chọn món</h5>
+                        <h5 class="fw-bold mb-3">Danh sách món</h5>
 
                         <div class="table-responsive">
                             <table class="table table-bordered align-middle">
@@ -41,7 +46,7 @@
                                     <tr>
                                         <th>Tên món</th>
                                         <th>Giá</th>
-                                        <th>Số lượng</th>
+                                        <th style="width: 160px;">Số lượng</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -54,8 +59,10 @@
                                                     @products[i].Name
                                                     <input type="hidden" name="productIds" value="@products[i].ProductId" />
                                                 </td>
-                                                <td class="text-danger fw-bold">@products[i].BasePrice.ToString("N0") đ</td>
-                                                <td style="width: 160px;">
+                                                <td class="text-danger fw-bold">
+                                                    @products[i].BasePrice.ToString("N0") đ
+                                                </td>
+                                                <td>
                                                     <input type="number"
                                                            name="quantities"
                                                            class="form-control quantity-input"
@@ -75,6 +82,34 @@
                                     }
                                 </tbody>
                             </table>
+                        </div>
+
+                        <div class="mt-4">
+                            <label class="form-label fw-bold">Chọn topping</label>
+                            <div class="row">
+                                @if (toppings != null && toppings.Any())
+                                {
+                                    foreach (var t in toppings)
+                                    {
+                                        <div class="col-md-6 mb-2">
+                                            <div class="form-check border rounded-3 p-2">
+                                                <input class="form-check-input"
+                                                       type="checkbox"
+                                                       name="selectedToppingIds"
+                                                       value="@t.ToppingId"
+                                                       id="top_@t.ToppingId" />
+                                                <label class="form-check-label ms-2" for="top_@t.ToppingId">
+                                                    @t.Name (+@t.Price.ToString("N0") đ)
+                                                </label>
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <div class="text-muted">Hiện chưa có topping nào.</div>
+                                }
+                            </div>
                         </div>
 
                         <div class="alert alert-danger d-none mt-3" id="quantityError">

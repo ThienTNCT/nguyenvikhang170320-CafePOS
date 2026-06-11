@@ -12,13 +12,13 @@ namespace QLKTX.Services
             var smtpClient = new SmtpClient("smtp.gmail.com")
             {
                 Port = 587,
-                Credentials = new NetworkCredential("nguyenvikhang849@gmail.com", "ffjugxuixptrwfau"),
+                Credentials = new NetworkCredential("takenteam.contact@gmail.com", "ttdmzeczteprokqg"),
                 EnableSsl = true,
             };
 
             var mailMessage = new MailMessage
             {
-                From = new MailAddress("nguyenvikhang849@gmail.com", "Hệ thống Quán CafePOS"),
+                From = new MailAddress("takenteam.contact@gmail.com", "Hệ thống Quán CafePOS"),
                 Subject = subject,
                 Body = htmlMessage,
                 IsBodyHtml = true,

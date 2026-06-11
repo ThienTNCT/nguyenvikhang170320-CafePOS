@@ -133,6 +133,11 @@
             <li class="nav-item">
                 <a class="nav-link @(currentController == "Order" ? "active" : "")" asp-area="Admin" asp-controller="Order" asp-action="Invoice">Hóa đơn</a>
             </li>
+            <li class="@(currentController == "Revenue" ? "active" : "")">
+                <a asp-area="Admin" asp-controller="Revenue" asp-action="Index">
+                    <i class="bi bi-cart"></i> Doanh thu
+                </a>
+            </li>
         </ul>
     </nav>
 

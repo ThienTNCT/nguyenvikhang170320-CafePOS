@@ -105,21 +105,26 @@
                                 <ul class="dropdown-menu shadow-sm" aria-labelledby="ordersDropdown">
                                     <li>
                                         <a class="dropdown-item @(currentController == "Order" && currentAction == "Index" ? "active" : "")"
-                                            asp-controller="Order" asp-action="Index">
+                                           asp-controller="Order" asp-action="Index">
                                             Xử lý đơn hàng
                                         </a>
                                     </li>
                                     <li>
                                         <a class="dropdown-item @(currentController == "Order" && currentAction == "Invoice" ? "active" : "")"
-                                            asp-controller="Order" asp-action="Invoice">
+                                           asp-controller="Order" asp-action="Invoice">
                                             Hóa đơn
                                         </a>
                                     </li>
-                                    
+
                                     <li><hr class="dropdown-divider"></li>
                                     <li>
                                         <a class="dropdown-item" asp-controller="Employee" asp-action="Index">
                                             Danh sách nhân viên
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Revenue" asp-action="Index">
+                                            Doanh thu
                                         </a>
                                     </li>
                                 </ul>
@@ -155,7 +160,7 @@
                                     <li>
                                         <a class="dropdown-item" asp-controller="TaiKhoan" asp-action="Index">
                                             Thông tin tài khoản
-                                        </a>     
+                                        </a>
                                     </li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li>
